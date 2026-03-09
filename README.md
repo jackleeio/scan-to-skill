@@ -4,7 +4,7 @@ Scan a QR code and install the referenced ClawHub skill automatically.
 
 ## What it does
 
-`scan-to-skill` provides a one-flow QR installer:
+`scan-to-skill` provides a one-flow QR installer and supports auto-trigger flows in chat:
 
 1. decode QR from image/screenshot
 2. parse target skill slug
