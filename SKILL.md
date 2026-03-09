@@ -12,10 +12,11 @@ Install skills from QR codes in one flow: decode -> parse slug -> install -> ver
 When a user sends an image and asks to install from QR:
 
 1. Detect image attachment in the current message.
-2. Run `scripts/install_from_qr.py <image>` (without `--confirm` — this is a dry run by default).
+2. Run `scripts/install_from_qr.py <image>` (dry run by default).
 3. Show the decoded text and parsed slug to the user.
-4. **Ask for explicit user confirmation before proceeding.**
-5. Only after the user approves, run again with `--confirm` to execute the install.
+4. **Prompt the user**: "Decoded skill: `<slug>`. Do you want me to install it?"
+5. If the user confirms, run `scripts/install_from_qr.py <image> --confirm` to execute the install.
+6. Show the install result and suggest next steps.
 
 ## Workflow
 
