@@ -7,14 +7,15 @@ description: QR-based skill installer for ClawHub. Decodes QR images (Telegram u
 
 Install skills from QR codes in one flow: decode -> parse slug -> install -> verify.
 
-## Auto Trigger (Telegram image -> auto install)
+## Trigger
 
-When a user sends an image and asks to install from QR, run this skill automatically:
+When a user sends an image and asks to install from QR:
 
 1. Detect image attachment in the current message.
-2. Pass the local image path to `scripts/install_from_qr.py`.
-3. Install immediately when payload resolves to a valid slug.
-4. Reply with decoded text, parsed slug, and install result.
+2. Pass the local image path to `scripts/install_from_qr.py --decode-only`.
+3. Show the decoded text and parsed slug to the user.
+4. **Ask for explicit user confirmation before running install.**
+5. Only proceed with install after the user approves.
 
 ## Workflow
 
@@ -43,9 +44,11 @@ When a user sends an image and asks to install from QR, run this skill automatic
 
 ## Safety
 
-- Only install if decoded content resolves to a valid slug.
-- If QR decodes to non-ClawHub URL, do not auto-install; ask for confirmation.
-- For unknown or suspicious slugs, recommend vetting before install.
+- **Never auto-install without user confirmation.** Always decode first, show results, then ask.
+- Only accept URLs from verified ClawHub domains (`clawhub.ai`, `clawhub.com` and their `www.` variants).
+- URLs from non-ClawHub domains are rejected by the script (exit code 4).
+- Plain slugs and `clawhub install` commands are accepted as trusted sources.
+- For any slug the user hasn't seen before, recommend checking the skill page on ClawHub before installing.
 
 ## Output format
 

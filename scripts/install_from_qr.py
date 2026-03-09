@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,63}$")
 INSTALL_RE = re.compile(r"clawhub\s+install\s+([a-z0-9][a-z0-9-]{1,63})", re.I)
+ALLOWED_HOSTS = {"clawhub.ai", "www.clawhub.ai", "clawhub.com", "www.clawhub.com"}
 
 
 def decode_with_opencv(image_path: str):
@@ -39,22 +40,35 @@ def decode_qr(image_path: str):
 
 
 def parse_slug(text: str):
+    """Parse a slug from QR text. Returns (slug, trusted) tuple.
+
+    trusted=True means the source is verified (ClawHub domain or install command).
+    trusted=False means the slug was extracted from an unverified source.
+    """
     m = INSTALL_RE.search(text)
     if m:
-        return m.group(1).lower()
+        return m.group(1).lower(), True
 
     if text.startswith("http://") or text.startswith("https://"):
-        path = urlparse(text).path.strip("/")
+        parsed = urlparse(text)
+        host = parsed.hostname or ""
+        if host not in ALLOWED_HOSTS:
+            return None, False
+        path = parsed.path.strip("/")
         if not path:
-            return None
+            return None, False
         parts = [p for p in path.split("/") if p]
         if not parts:
-            return None
+            return None, False
         candidate = parts[-1].lower()
-        return candidate if SLUG_RE.match(candidate) else None
+        if SLUG_RE.match(candidate):
+            return candidate, True
+        return None, False
 
     candidate = text.strip().lower()
-    return candidate if SLUG_RE.match(candidate) else None
+    if SLUG_RE.match(candidate):
+        return candidate, True
+    return None, False
 
 
 def main():
@@ -69,11 +83,18 @@ def main():
         print("ERROR: Could not decode QR. Install opencv-python or zbarimg.")
         sys.exit(2)
 
-    slug = parse_slug(raw)
+    slug, trusted = parse_slug(raw)
     print(f"Decoded QR: {raw}")
     print(f"Parsed slug: {slug if slug else 'N/A'}")
+    print(f"Source trusted: {trusted}")
 
     if not slug:
+        if raw.startswith("http://") or raw.startswith("https://"):
+            parsed_host = urlparse(raw).hostname or ""
+            if parsed_host not in ALLOWED_HOSTS:
+                print(f"ERROR: URL host '{parsed_host}' is not a recognized ClawHub domain.")
+                print(f"Allowed hosts: {', '.join(sorted(ALLOWED_HOSTS))}")
+                sys.exit(4)
         print("ERROR: Unsupported QR payload for auto-install.")
         sys.exit(3)
 
@@ -84,6 +105,10 @@ def main():
     print("Install command:", " ".join(cmd))
     if args.decode_only:
         return
+
+    if not trusted:
+        print("WARNING: Slug source could not be verified. Requires manual confirmation.")
+        sys.exit(5)
 
     p = subprocess.run(cmd)
     sys.exit(p.returncode)
