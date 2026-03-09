@@ -1,34 +1,53 @@
 # Scan to Skill
 
-Scan to Skill 支持「扫码即安装」：识别二维码中的 ClawHub 链接或 skill slug，自动调用 `clawhub install` 安装技能。
+Scan a QR code and install the referenced ClawHub skill automatically.
 
-## 核心能力
+## What it does
 
-- 从图片/截图识别二维码
-- 解析 payload（URL / slug / 安装命令）
-- 自动安装 skill
-- 返回安装结果与下一步提示
+`scan-to-skill` provides a one-flow QR installer:
 
-## 目录结构
+1. decode QR from image/screenshot
+2. parse target skill slug
+3. run `clawhub install <slug>`
+4. return install result
 
-- `SKILL.md`：扫码安装流程说明
-- `scripts/install_from_qr.py`：二维码识别与安装脚本
-- `references/slug-parsing.md`：slug 解析规则
+## Supported QR payloads
 
-## 打包文件
+- plain slug: `skill-feed`
+- ClawHub URL: `https://clawhub.ai/<slug>` or `https://clawhub.ai/<owner>/<slug>`
+- install text: `clawhub install <slug>`
 
-- `../dist/scan-to-skill.skill`
-
-## 快速使用
+## Quick start
 
 ```bash
-# 仅识别
+# decode only
 python3 scripts/install_from_qr.py --decode-only <image_path>
 
-# 识别并安装
+# decode + install
 python3 scripts/install_from_qr.py <image_path>
+
+# custom install dir
+python3 scripts/install_from_qr.py <image_path> --dir skills
 ```
 
-## 依赖说明
+## Safety behavior
 
-脚本优先使用 OpenCV 解码二维码；若不可用，回退尝试 `zbarimg`。
+- Only auto-installs when payload resolves to a valid slug
+- Non-ClawHub URLs are not auto-installed
+- Unsupported payloads are rejected with clear error messages
+
+## Project structure
+
+- `SKILL.md` – workflow and safety policy
+- `scripts/install_from_qr.py` – decoder + installer
+- `references/slug-parsing.md` – parsing rules
+
+## Install this skill
+
+```bash
+clawhub install scan-to-skill
+```
+
+## Decoder fallback
+
+The script tries OpenCV first, then falls back to `zbarimg`.
