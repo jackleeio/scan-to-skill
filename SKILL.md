@@ -1,6 +1,6 @@
 ---
 name: scan-to-skill
-description: Scan a QR code from an image/screenshot/camera capture, extract a ClawHub skill URL or slug, and install that skill automatically with the ClawHub CLI. Use when users ask for "scan to install", "QR install", or want one-step skill install from QR.
+description: QR-based skill installer for ClawHub. Decodes QR images (Telegram uploads, screenshots, camera captures), extracts a valid skill slug or install command, and installs automatically via ClawHub CLI. Use for "scan to install" flows, especially when users send a QR image and want immediate one-step skill installation with result feedback.
 ---
 
 # Scan to Skill
