@@ -75,6 +75,7 @@ def main():
     ap = argparse.ArgumentParser(description="Decode QR and install ClawHub skill")
     ap.add_argument("image", help="Path to QR image")
     ap.add_argument("--decode-only", action="store_true", help="Only decode and parse, do not install")
+    ap.add_argument("--confirm", action="store_true", help="Required flag to actually run install (safety gate)")
     ap.add_argument("--dir", default=None, help="Custom install dir for clawhub install --dir")
     args = ap.parse_args()
 
@@ -107,8 +108,12 @@ def main():
         return
 
     if not trusted:
-        print("WARNING: Slug source could not be verified. Requires manual confirmation.")
+        print("ERROR: Slug source could not be verified. Aborting.")
         sys.exit(5)
+
+    if not args.confirm:
+        print("DRY RUN: pass --confirm to actually install. Requires user approval first.")
+        sys.exit(0)
 
     p = subprocess.run(cmd)
     sys.exit(p.returncode)

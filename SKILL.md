@@ -12,10 +12,10 @@ Install skills from QR codes in one flow: decode -> parse slug -> install -> ver
 When a user sends an image and asks to install from QR:
 
 1. Detect image attachment in the current message.
-2. Pass the local image path to `scripts/install_from_qr.py --decode-only`.
+2. Run `scripts/install_from_qr.py <image>` (without `--confirm` — this is a dry run by default).
 3. Show the decoded text and parsed slug to the user.
-4. **Ask for explicit user confirmation before running install.**
-5. Only proceed with install after the user approves.
+4. **Ask for explicit user confirmation before proceeding.**
+5. Only after the user approves, run again with `--confirm` to execute the install.
 
 ## Workflow
 
@@ -35,16 +35,19 @@ When a user sends an image and asks to install from QR:
 
 ## Commands
 
-- Decode only:
+- Decode only (no install attempt):
   - `python3 scripts/install_from_qr.py --decode-only <image_path>`
-- Decode + install:
+- Dry run (decode + show install command, but do not install):
   - `python3 scripts/install_from_qr.py <image_path>`
+- Install after user confirms:
+  - `python3 scripts/install_from_qr.py <image_path> --confirm`
 - Install to custom dir:
-  - `python3 scripts/install_from_qr.py <image_path> --dir skills`
+  - `python3 scripts/install_from_qr.py <image_path> --confirm --dir skills`
 
 ## Safety
 
-- **Never auto-install without user confirmation.** Always decode first, show results, then ask.
+- **The script defaults to dry run.** Install only executes when `--confirm` is explicitly passed.
+- The agent must never pass `--confirm` without the user's explicit approval.
 - Only accept URLs from verified ClawHub domains (`clawhub.ai`, `clawhub.com` and their `www.` variants).
 - URLs from non-ClawHub domains are rejected by the script (exit code 4).
 - Plain slugs and `clawhub install` commands are accepted as trusted sources.
